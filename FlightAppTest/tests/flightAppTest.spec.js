@@ -8,28 +8,48 @@ test('Search', async ({ page }) => {
   const combobox2 = await page.$('#To'); // İkinci combobox öğesi seçicisi
 
   const value1 = await combobox1?.fill('Istanbul');
-  const value2 = await combobox2?.fill('Istanbul');
+  const value2 = await combobox2?.fill('Istanbul'); 
+  
 
   if (value1 === value2) {
-    console.error('Hata: Aynı sehri secemezsiniz!');
+    console.error('Hata: Ayni sehri secemezsiniz!');
   }  
   else {
     console.log('İki combobox değeri farkli.'); 
-  }    
+  }   
 });
 
-test('Listing', async ({ page }) => {
+test('Listing', async ({ page }) => { 
   await page.goto('https://flights-app.pages.dev/');
 
-  // Uçuş listeleme testi
-  await page.fill('[placeholder="From"]', 'Istanbul');
-  await page.fill('[placeholder="To"]', 'Los Angeles');
-  //await page.press('Enter'); // Formu göndermek için Enter tuşuna bas
-  await page.waitForSelector('.flight-item'); // Uçuşlar listelendi mi kontrol et
+  const combobox1 = await page.$('#From'); // İlk combobox öğesi seçicisi
+  const combobox2 = await page.$('#To'); // İkinci combobox öğesi seçicisi
 
-  // "Found X items" yazısını kontrol et
-  const flightCount = await page.locator('.flight-item').count();
-  const foundItemsText = await page.locator('.found-items').innerText();
-  //const foundCount = parseInt(foundItemsText.match(/\d+/)[0], 10);
-  //expect(flightCount).toBe(foundCount);
+  await combobox1?.fill('Istanbul');
+  await combobox2?.fill('Los Angeles'); 
+  
+  await page.waitForSelector('.grid-cols-1'); // Adjust the selector based on your HTML structure
+
+  const foundText = await page.$eval('p.mb-10', (element) => element.textContent);
+
+  if (foundText !== null) {
+    const foundNumberMatch = foundText.match(/\d+/);
+    if (foundNumberMatch) {
+      const foundNumber = parseInt(foundNumberMatch[0]);
+      const ulItemsCount = await page.$$eval('li.overflow-hidden', (items) => items.length);  
+      if (foundNumber === ulItemsCount) {
+        console.log(`Test passed: Found ${ulItemsCount} items`);
+      } else {
+        console.error(`Test failed: Expected ${foundNumber} items, but found ${ulItemsCount} items`);
+      }
+    }
+    else {
+      console.error("Test failed: 'found 2 items' text does not contain a number");
+    }
+  
+  } else {
+    console.error("Test failed: 'found 2 items' text not found");
+  }
+      
+ 
 });
